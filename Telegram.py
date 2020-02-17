@@ -9,19 +9,21 @@ import Subscriptions
 from threading import Event
 from time import time
 from datetime import timedelta
+import threading
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
+lock = threading.RLock()
+
 # Define a few command handlers. These usually take the two arguments bot and
 # update. Error handlers also receive the raised TelegramError object in error.
 def start(update, context):
 	"""Send a message when the command /start is issued."""
 	keyboard = [[InlineKeyboardButton("Subscribe", callback_data='1'),
-				 InlineKeyboardButton("Unsubscribe", callback_data='2')],
-				[InlineKeyboardButton("Nightline", callback_data='3')]]
+				 InlineKeyboardButton("Unsubscribe", callback_data='2')]]
 
 	reply_markup = InlineKeyboardMarkup(keyboard)
 	update.message.reply_text('Hello! What would you like to do?', reply_markup=reply_markup)
@@ -31,6 +33,7 @@ def help(update, context):
 	update.message.reply_text('Hello! This bot can send you updates when new videos are uploaded to the ETH-Videothek.')
 
 def button(update, context):
+	lock.acquire()
 	query = update.callback_query
 
 	if query.data == "0":
@@ -51,6 +54,8 @@ def button(update, context):
 			lectureSelect(update, context)
 		elif data["L"] == 3:
 			confirm(update, context)
+	
+	lock.release()
 
 def subscribe(update, context):
 	keyboard = []

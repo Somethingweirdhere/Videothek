@@ -1,6 +1,8 @@
 import io
 from VideoLookup import getVideoList, extractInfos
 import json
+#import Telegram
+from Telegram import lock
 
 subscriptions = {}
 
@@ -18,17 +20,23 @@ def process(lecture, user, subscribing):
 
 
 def load():
+    lock.acquire()
     with open('subscriptions') as json_file:
         global subscriptions
         subscriptions = json.load(json_file)
+        
+    lock.release()
 
 
 def save():
+    lock.acquire()
     with open('subscriptions', 'w') as json_file:
         json.dump(subscriptions, json_file)
+    lock.release()
 
 
 def checkChanges():
+    lock.acquire()
     changes = []
     global subscriptions
 
@@ -40,8 +48,9 @@ def checkChanges():
         if sbscpy[lecture]["count"] < updatedCount:
             sbscpy[lecture]["count"] = updatedCount
 
-            changes.append([sbscpy[lecture]["users"], extractInfos(videos[0])])
+            changes.append([sbscpy[lecture]["users"], extractInfos(videos[0], lecture)])
 
     subscriptions = sbscpy
     save()
+    lock.release()
     return changes

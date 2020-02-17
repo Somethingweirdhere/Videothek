@@ -31,15 +31,15 @@ def searchLectures(department):
 	return lectureList
 
 def getVideoList(lecture):
-	lecture = "https://video.ethz.ch" + lecture
-	res = requests.get(lecture, headers={'User-Agent': 'Mozilla/5.0'})
-	soup = BeautifulSoup(res.content, features="lxml")
-	videos = soup.find("div", {"id": "filter-container"}).find_all("div", {"class": "newsListBox"})
+	lecture = "https://video.ethz.ch" + lecture.replace("html", "series-metadata.json")
+	res = requests.get(lecture, headers={'User-Agent': 'Mozilla/6.0'})
+	listing = json.loads(res.text)
+	
+	videos = listing["episodes"]
 	return videos
 
-def extractInfos(video):
-	soup = BeautifulSoup(str(video), features="lxml")
-	link = soup.find("a")["href"]
-	title = soup.find("h2").contents[0]
-	date = re.search("\d\d\.\d\d\.\d\d\d\d", str(soup.find("p")))[0]
+def extractInfos(video, lecture):
+	link = lecture.replace(".html",video['id'])
+	title = video['title']
+	date = video['createdAt']
 	return link, title, date
