@@ -8,3 +8,5 @@ __pycache__/VideoLookup.cpython-37.pyc
 .vs/Neuer Ordner/v15/.suo
 subscriptions
 token
+.vscode/settings.json
+__pycache__/Telegram.cpython-36.pyc
