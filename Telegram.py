@@ -181,7 +181,7 @@ def main():
 
     # Periodically save jobs
 
-	job_queue.run_repeating(checkForUpdates, timedelta(seconds=10))
+	job_queue.run_repeating(checkForUpdates, timedelta(seconds=10*60))
 	
 
 	# Run the bot until you press Ctrl-C or the process receives SIGINT,
