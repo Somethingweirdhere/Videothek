@@ -33,13 +33,15 @@ def searchLectures(department):
 def getVideoList(lecture):
 	lecture = "https://video.ethz.ch" + lecture.replace("html", "series-metadata.json")
 	res = requests.get(lecture, headers={'User-Agent': 'Mozilla/6.0'})
+	if(res == None or res.text == None):
+		return []
 	listing = json.loads(res.text)
 	
 	videos = listing["episodes"]
 	return videos
 
 def extractInfos(video, lecture):
-	link = lecture.replace(".html",video['id'])
+	link = lecture.replace(".html","/" + video['id'])
 	title = video['title']
 	date = video['createdAt']
 	return link, title, date
