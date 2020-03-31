@@ -10,20 +10,22 @@ from threading import Event
 from time import time
 from datetime import timedelta
 import threading
+import sys, traceback
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 logger = logging.getLogger(__name__)
-
+logger.info("Started loging")
 lock = threading.RLock()
 
 # Define a few command handlers. These usually take the two arguments bot and
 # update. Error handlers also receive the raised TelegramError object in error.
 def start(update, context):
+    logger.info("Got start")
     """Send a message when the command /start is issued."""
     keyboard = [[InlineKeyboardButton("Subscribe", callback_data='1'),
-        InlineKeyboardButton("Unsubscribe", callback_data='2')]]
+     InlineKeyboardButton("Unsubscribe", callback_data='2')]]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
     update.message.reply_text('Hello! What would you like to do?', reply_markup=reply_markup)
@@ -33,33 +35,34 @@ def help(update, context):
     update.message.reply_text('Hello! This bot can send you updates when new videos are uploaded to the ETH-Videothek.')
 
 def button(update, context):
-	try:
-		lock.acquire()
-		query = update.callback_query
+    try:
+        lock.acquire()
+        query = update.callback_query
+        logger.info(query.data)
+        if query.data == "0":
+            cancel(update, context)
+        elif query.data == "1":
+            subscribe(update, context)
+        elif query.data == "2":
+            unsubscribe(update, context)
+        elif query.data == "3":
+            nightline(update, context)
+        else:
+            data = json.loads(query.data)
+            if not "L" in data:
+                error(update, context)
+            elif data["L"] == 1:
+                departmentSelect(update, context)
+            elif data["L"] == 2:
+                lectureSelect(update, context)
+            elif data["L"] == 3:
+                confirm(update, context)
 
-		if query.data == "0":
-			cancel(update, context)
-		elif query.data == "1":
-			subscribe(update, context)
-		elif query.data == "2":
-			unsubscribe(update, context)
-		elif query.data == "3":
-			nightline(update, context)
-		else:
-			data = json.loads(query.data)
-			if not "L" in data:
-				error(update, context)
-			elif data["L"] == 1:
-				departmentSelect(update, context)
-			elif data["L"] == 2:
-				lectureSelect(update, context)
-			elif data["L"] == 3:
-				confirm(update, context)
+        lock.release()
 
-		lock.release()
-	
-	except Exception as e:
-		print(e)
+    except Exception as e:
+        logger.info(e)
+        traceback.print_exc(file=sys.stdout)
 
 def subscribe(update, context):
     keyboard = []
@@ -148,16 +151,30 @@ def error(update, context):
     logger.warning('Update "%s" caused error "%s"', update, context.error)
 
 def checkForUpdates(context):
+    logger.info("Checking lectures")
     try:
         changes = Subscriptions.checkChanges()
 
         for i in range(0, len(changes)):
             for j in range(0, len(changes[i][0])):
-                content = "A new video has been posted in \"" + str(changes[i][1][1]) + "\" on the " + str(changes[i][1][2]) + " : " + "https://video.ethz.ch" + str(changes[i][1][0])
-                context.bot.send_message(chat_id=changes[i][0][j], text=content)
+                try:
+                    content = "A new video has been posted in \"" + str(
+                        changes[i][1][1]) + "\" on the " + str(
+                            changes[i][1]
+                            [2]) + " : " + "https://video.ethz.ch" + str(
+                                changes[i][1][0])
+                    logger.info("Sending" + content + " to " + str(changes[i][0][j]))
+                    context.bot.send_message(chat_id=changes[i][0][j], text=content)
+                except Exception as e:
+                    logger.info(e)
+                    traceback.print_exc(file=sys.stdout)
 
     except Exception as e:
-        print(e)
+        logger.info(e)
+        traceback.print_exc(file=sys.stdout)
+
+    logger.info("Done checking lectures")
+
 
 def main():
     """Start the bot."""
