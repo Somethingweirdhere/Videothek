@@ -1,6 +1,6 @@
 # Videothek
 
-# Important:
+## Important:
 
 All new development is done on https://gitlab.ethz.ch/, this version is not up to date.
 
