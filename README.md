@@ -8,6 +8,6 @@ Telegram bot that informs ETH-students about new Videos posted on https://video.
 [<img src="https://i.imgur.com/6jSuHah.jpg" width=285>](Screenshot)
 [<img src="https://i.imgur.com/BBvzrNP.jpg" width=285>](Screenshot)
 
-### Usage:
+### Run it locally:
 
 Clone this repository and install and create a file named `token` which contains your Telegram Token for your bot. Afterwards, run `python Telegram.py`.
